@@ -2,9 +2,13 @@
 bs4
 jupyter
 lxml
+matplotlib
 numpy
 pandas
 papermill
+pytorch-model-summary
+# pywin32
+# pywinpty
 scikit-learn
 scipy
 seaborn
