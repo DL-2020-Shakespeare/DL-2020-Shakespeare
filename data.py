@@ -39,7 +39,7 @@ def get_text(doc):
     text_field = bs.find("text")
     if text_field:
         p_fields = text_field.find_all("p")
-        return " . ".join([p_field.contents[0] for p_field in p_fields])
+        return " ".join([p_field.contents[0] for p_field in p_fields])
     else:
         return ""
 

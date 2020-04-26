@@ -1,18 +1,3 @@
--e git+https://github.com/keras-team/autokeras.git@965d2d1c6c4c5cc42d9115d4beb8ebafff50a8d8#egg=autokeras
-bs4
-jupyter
-lxml
-matplotlib
-numpy
-pandas
-papermill
-pytorch-model-summary
-# pywin32
-# pywinpty
-scikit-learn
-scipy
-seaborn
-tensorflow
--f https://download.pytorch.org/whl/torch_stable.html
+-r base.txt
 torch==1.5.0+cpu
 torchvision==0.6.0+cpu

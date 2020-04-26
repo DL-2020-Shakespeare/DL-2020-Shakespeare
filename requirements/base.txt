@@ -1,0 +1,17 @@
+-e git+https://github.com/keras-team/autokeras.git@965d2d1c6c4c5cc42d9115d4beb8ebafff50a8d8#egg=autokeras
+-f https://download.pytorch.org/whl/torch_stable.html
+bs4
+jupyter
+lxml
+matplotlib
+numpy
+pandas
+papermill
+pytorch-model-summary
+# pywin32
+# pywinpty
+scikit-learn
+scipy
+seaborn
+spacy
+tensorflow
