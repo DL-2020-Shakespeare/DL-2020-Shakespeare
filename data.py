@@ -73,15 +73,18 @@ def get_docs_labels(corpus_dir):
     pattern = os.path.join(corpus_dir, "*.zip")
     texts_dict = {}
     labels_dict = {}
+    # *** for testing ***
     # for zfile in sorted(glob.glob(pattern))[:1]:
     for zfile in sorted(glob.glob(pattern)):
         with zipfile.ZipFile(zfile, "r") as zf:
+            # *** for testing ***
             # for xmlfile in zf.namelist()[:1]:
             for xmlfile in zf.namelist():
-                with zf.open(xmlfile, "r") as xf:
-                    doc = xf.read()
-                    texts_dict[xmlfile] = get_text(doc)
-                    labels_dict[xmlfile] = get_labels(doc)
+                if os.path.splitext(xmlfile)[1] == ".xml":
+                    with zf.open(xmlfile, "r") as xf:
+                        doc = xf.read()
+                        texts_dict[xmlfile] = get_text(doc)
+                        labels_dict[xmlfile] = get_labels(doc)
     texts = [text for (_, text) in sorted(texts_dict.items())]
     labels_mat = np.empty((len(labels_dict), len(CODEMAP)), dtype=int)
     for i, (_, labels) in enumerate(sorted(labels_dict.items())):
