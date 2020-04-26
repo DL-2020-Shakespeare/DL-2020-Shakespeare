@@ -1,15 +1,16 @@
 import warnings
 
-import spacy
+import en_core_web_sm
+from tqdm import tqdm
 
 warnings.filterwarnings("ignore")
 
-nlp = spacy.load("en")
+nlp = en_core_web_sm.load()
 
 
 def preprocess_corpus(corpus):
     preprocessed_corpus = []
-    for text in corpus:
+    for text in tqdm(corpus):
         doc = nlp(text)
         preprocessed_text = []
         for token in doc:
