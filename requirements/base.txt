@@ -1,6 +1,6 @@
-# -e git+https://github.com/keras-team/autokeras.git@965d2d1c6c4c5cc42d9115d4beb8ebafff50a8d8#egg=autokeras
+-e git+https://github.com/keras-team/autokeras.git@3d520e2eb5d0fa5c6fcec94d48f768bacf833f04#egg=autokeras
+-e git+https://github.com/DL-2020-Shakespeare/keras-tuner.git@5f35f101883a7884e9521de7db4eb632ab659775#egg=keras-tuner
 -f https://download.pytorch.org/whl/torch_stable.html
-autokeras
 bs4
 jupyter
 lxml
@@ -8,12 +8,9 @@ matplotlib
 numpy
 pandas
 papermill
-pytorch-model-summary
-# pywin32
-# pywinpty
 scikit-learn
 scipy
 seaborn
 spacy
-tensorflow
+tensorflow==2.2.0rc3
 tqdm
