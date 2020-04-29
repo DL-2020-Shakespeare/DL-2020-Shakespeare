@@ -1,17 +1,18 @@
 import warnings
+from multiprocessing import cpu_count, Pool
 
 import en_core_web_sm
-from tqdm import tqdm
+import numpy as np
 
 warnings.filterwarnings("ignore")
 
 nlp = en_core_web_sm.load()
 
 
-def preprocess_corpus(corpus):
+def worker(corpus):
     preprocessed_corpus = []
-    for text in tqdm(corpus):
-        doc = nlp(text)
+    for text in corpus:
+        doc = nlp(str(text))
         preprocessed_text = []
         for token in doc:
             if token.is_punct or token.is_space or token.is_stop:
@@ -28,7 +29,15 @@ def preprocess_corpus(corpus):
     return preprocessed_corpus
 
 
-if __name__ == '__main__':
+def preprocess_corpus(corpus):
+    n_cores = cpu_count()
+    split = np.array_split(corpus, n_cores)
+    with Pool(n_cores) as pool:
+        split = pool.map(worker, split)
+    return np.concatenate(split).tolist()
+
+
+if __name__ == "__main__":
     for s in preprocess_corpus([
         "It's about our court-martial.",
         "They've to go.",

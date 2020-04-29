@@ -2,12 +2,19 @@ import glob
 import os
 import sys
 import zipfile
+from multiprocessing import cpu_count, Pool
+import random as rn
 
 import numpy as np
+import pandas as pd
 from bs4 import BeautifulSoup
 
+seed = 42
+rn.seed(seed)
 
-def extract_data(extraction_dir="train", data_dir="data", data_zip_name="reuters-training-corpus.zip"):
+
+def extract_data(extraction_dir="train", data_dir="data",
+                 data_zip_name="reuters-training-corpus.zip"):
     root_dir = os.getcwd()
     if root_dir not in sys.path:
         sys.path.append(root_dir)
@@ -34,58 +41,50 @@ def get_codes(codefile):
 CODEMAP = get_codes("data/topic_codes.txt")
 
 
-def get_text(doc):
-    bs = BeautifulSoup(doc, "lxml")
-    text_field = bs.find("text")
-    if text_field:
-        p_fields = text_field.find_all("p")
-        return " ".join([p_field.contents[0] for p_field in p_fields])
-    else:
-        return ""
+def get_doc(raw_xml):
+    bs = BeautifulSoup(raw_xml, "lxml")
+    return bs.find("headline").get_text(" ", strip=True) + " " + \
+           bs.find("text").get_text(" ", strip=True)
 
 
-def get_labels(doc):
-    vec = np.zeros(len(CODEMAP), dtype=int)
-    bs = BeautifulSoup(doc, "lxml")
+def get_labels(raw_xml):
+    labels = np.zeros(len(CODEMAP), dtype=int)
+    bs = BeautifulSoup(raw_xml, "lxml")
     topics = bs.find("codes", class_="bip:topics:1.0")
     if topics:
         codes = topics.find_all("code")
         for code in codes:
-            vec[CODEMAP[code["code"]]] = 1
-    return vec
+            labels[CODEMAP[code["code"]]] = 1
+    return labels
 
 
-def get_doc_labels(corpus_dir):
+def worker(zip_files):
+    d = {"doc": [], "labels": []}
+    for zip_file in zip_files:
+        with zipfile.ZipFile(zip_file, "r") as zf:
+            xml_files = [f for f in zf.namelist() if os.path.splitext(f)[1] == ".xml"]
+            for xml_file in xml_files:
+                with zf.open(xml_file, "r") as xf:
+                    raw_xml = xf.read()
+                    d["doc"].append(get_doc(raw_xml))
+                    d["labels"].append(get_labels(raw_xml))
+    return pd.DataFrame(d)
+
+
+def get_docs_labels(corpus_dir, n_zip_files=None):
     pattern = os.path.join(corpus_dir, "*.zip")
-    doc_labels = {}
-    for zfile in sorted(glob.glob(pattern)):
-        with zipfile.ZipFile(zfile, "r") as zf:
-            for xmlfile in zf.namelist():
-                with zf.open(xmlfile, "r") as xf:
-                    doc_labels[xmlfile] = get_labels(xf.read())
-    vecs = np.empty((len(doc_labels), len(CODEMAP)), dtype=int)
-    for i, (doc, label) in enumerate(sorted(doc_labels.items())):
-        vecs[i] = label
-    return vecs
+    zip_files = sorted(glob.glob(pattern))
+    if n_zip_files is not None:
+        rn.shuffle(zip_files)
+        zip_files = zip_files[:n_zip_files]
+    n_cores = cpu_count()
+    split = np.array_split(zip_files, n_cores)
+    with Pool(n_cores) as pool:
+        df_split = pool.map(worker, split)
+    return pd.concat(df_split)
 
 
-def get_docs_labels(corpus_dir):
-    pattern = os.path.join(corpus_dir, "*.zip")
-    texts_dict = {}
-    labels_dict = {}
-    for zfile in sorted(glob.glob(pattern)):
-        print(f"extracting {zfile}")
-        with zipfile.ZipFile(zfile, "r") as zf:
-            for xmlfile in zf.namelist():
-                if os.path.splitext(xmlfile)[1] == ".xml":
-                    with zf.open(xmlfile, "r") as xf:
-                        doc = xf.read()
-                        texts_dict[xmlfile] = get_text(doc)
-                        labels_dict[xmlfile] = get_labels(doc)
-                else:
-                    print(f"ignoring {xmlfile}")
-    texts = [text for (_, text) in sorted(texts_dict.items())]
-    labels_mat = np.empty((len(labels_dict), len(CODEMAP)), dtype=int)
-    for i, (_, labels) in enumerate(sorted(labels_dict.items())):
-        labels_mat[i] = labels
-    return texts, labels_mat
+if __name__ == "__main__":
+    df = get_docs_labels("train/REUTERS_CORPUS_2", n_zip_files=2)
+    print(df.shape)
+    print(df)
