@@ -14,7 +14,7 @@ def preprocess_corpus(corpus):
         doc = nlp(text)
         preprocessed_text = []
         for token in doc:
-            if token.is_punct or token.is_space:
+            if token.is_punct or token.is_space or token.is_stop:
                 continue
             if token.like_email:
                 preprocessed_text.append("-email-")

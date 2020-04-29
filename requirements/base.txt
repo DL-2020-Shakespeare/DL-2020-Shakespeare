@@ -2,6 +2,8 @@
 -e git+https://github.com/DL-2020-Shakespeare/keras-tuner.git@5f35f101883a7884e9521de7db4eb632ab659775#egg=keras-tuner
 -f https://download.pytorch.org/whl/torch_stable.html
 bs4
+gdown
+gensim
 jupyter
 lxml
 matplotlib

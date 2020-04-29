@@ -23,7 +23,7 @@ def main(args):
     print(x_train.shape)
     print(y_train.shape)
 
-    clf = ak.TextClassifier(max_trials=100, multi_label=True, seed=seed, overwrite=True, directory="tmp")
+    clf = ak.TextClassifier(max_trials=100, multi_label=True, seed=seed, overwrite=True, directory="/scratch/project_2002961/")
     clf.fit(x_train, y_train)
 
     model = clf.export_model()
