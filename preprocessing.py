@@ -17,12 +17,12 @@ def worker(corpus):
         for token in doc:
             if token.is_punct or token.is_space or token.is_stop:
                 continue
-#             if token.like_email:
-#                 preprocessed_text.append("-email-")
-#             elif token.like_num:
-#                 preprocessed_text.append("-num-")
-#             elif token.like_url:
-#                 preprocessed_text.append("-url-")
+            # elif token.like_email:
+            #     preprocessed_text.append("-email-")
+            # elif token.like_num:
+            #     preprocessed_text.append("-num-")
+            # elif token.like_url:
+            #     preprocessed_text.append("-url-")
             else:
                 preprocessed_text.append(token.lemma_.lower())
         preprocessed_corpus.append(" ".join(preprocessed_text))
