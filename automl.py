@@ -25,9 +25,9 @@ def main(args):
                                                         train_size=n_docs,
                                                         test_size=n_docs,
                                                         random_state=seed)
-    print(x_train.shape)
+    print(len(x_train))
     print(y_train.shape)
-    print(x_test.shape)
+    print(len(x_test))
     print(y_test.shape)
 
     clf = ak.TextClassifier(max_trials=5,
@@ -36,10 +36,10 @@ def main(args):
                             seed=seed,
                             overwrite=True,
                             directory="/scratch/project_2002961/")
-    clf.fit(x_train, y_train)
+    clf.fit(np.array(x_train), y_train)
 
     for model in clf.tuner.get_best_models(3):
-        y_pred = model.predict(x_test)
+        y_pred = model.predict(np.array(x_test))
         print(f"test accuracy: {accuracy_score(y_test, y_pred)}")
         print(f"test f1-score (micro): {f1_score(y_test, y_pred, average='micro')}")
         print(f"test f1-score (macro): {f1_score(y_test, y_pred, average='macro')}")
