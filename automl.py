@@ -4,6 +4,9 @@ import pprint
 
 import autokeras as ak
 import numpy as np
+import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.model_selection import train_test_split
 
 seed = 42
 np.random.seed(seed)
@@ -12,24 +15,36 @@ np.random.seed(seed)
 def main(args):
     n_docs = args.n_docs
 
-    with open("train/preprocessed_docs.pkl", "rb") as f:
-        x_train = np.array(pickle.load(f))
-    y_train = np.load("train/labels.npy")
+    df = pd.read_pickle("train/data.pkl")
+    labels = np.array(df["labels"].tolist())
+    with open("train/preprocessed_docs_no_sw_no_rep.pkl", "rb") as f:
+        preprocessed_docs = pickle.load(f)
 
-    if n_docs is not None:
-        x_train = x_train[:n_docs]
-        y_train = y_train[:n_docs]
-
+    x_train, x_test, y_train, y_test = train_test_split(preprocessed_docs,
+                                                        labels,
+                                                        train_size=n_docs,
+                                                        test_size=n_docs,
+                                                        random_state=seed)
     print(x_train.shape)
     print(y_train.shape)
+    print(x_test.shape)
+    print(y_test.shape)
 
-    clf = ak.TextClassifier(max_trials=100, multi_label=True, seed=seed, overwrite=True, directory="/scratch/project_2002961/")
+    clf = ak.TextClassifier(max_trials=5,
+                            multi_label=True,
+                            loss="binary_crossentropy",
+                            seed=seed,
+                            overwrite=True,
+                            directory="/scratch/project_2002961/")
     clf.fit(x_train, y_train)
 
-    model = clf.export_model()
-    print(type(model))
-    model.summary(line_length=120)
-    pprint.PrettyPrinter(indent=2).pprint(model.get_config())
+    for model in clf.tuner.get_best_models(3):
+        y_pred = model.predict(x_test)
+        print(f"test accuracy: {accuracy_score(y_test, y_pred)}")
+        print(f"test f1-score (micro): {f1_score(y_test, y_pred, average='micro')}")
+        print(f"test f1-score (macro): {f1_score(y_test, y_pred, average='macro')}")
+        model.summary(line_length=120)
+        pprint.PrettyPrinter(indent=2).pprint(model.get_config())
 
 
 if __name__ == "__main__":
