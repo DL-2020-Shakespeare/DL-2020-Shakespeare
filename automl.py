@@ -1,6 +1,9 @@
 import argparse
 import pickle
 import pprint
+import warnings
+
+warnings.filterwarnings("ignore")
 
 import autokeras as ak
 import numpy as np
@@ -9,7 +12,6 @@ from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 
 seed = 42
-np.random.seed(seed)
 
 
 def main(args):
@@ -30,7 +32,7 @@ def main(args):
     print(len(x_test))
     print(y_test.shape)
 
-    clf = ak.TextClassifier(max_trials=5,
+    clf = ak.TextClassifier(max_trials=100,
                             multi_label=True,
                             loss="binary_crossentropy",
                             seed=seed,
@@ -38,11 +40,10 @@ def main(args):
                             directory="/scratch/project_2002961/")
     clf.fit(np.array(x_train), y_train)
 
-    for model in clf.tuner.get_best_models(3):
-        y_pred = model.predict(np.array(x_test))
-        print(f"test accuracy: {accuracy_score(y_test, y_pred)}")
-        print(f"test f1-score (micro): {f1_score(y_test, y_pred, average='micro')}")
-        print(f"test f1-score (macro): {f1_score(y_test, y_pred, average='macro')}")
+    for model in clf.tuner.get_best_models(10):
+	y_pred = np.round(model.predict(x_test)).astype(int)
+	print(f"test avg. accuracy: {np.mean([accuracy_score(y_test[i], y_pred[i]) for i in range(len(y_test))])}")
+	print(f"test hamming loss: {hamming_loss(y_test, y_pred)}")
         model.summary(line_length=120)
         pprint.PrettyPrinter(indent=2).pprint(model.get_config())
 
