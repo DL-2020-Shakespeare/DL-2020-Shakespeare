@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 import autokeras as ak
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import average_precision_score
 from sklearn.model_selection import train_test_split
 
 seed = 42
@@ -41,9 +41,9 @@ def main(args):
     clf.fit(np.array(x_train), y_train)
 
     for model in clf.tuner.get_best_models(10):
-	y_pred = np.round(model.predict(x_test)).astype(int)
-	print(f"test avg. accuracy: {np.mean([accuracy_score(y_test[i], y_pred[i]) for i in range(len(y_test))])}")
-	print(f"test hamming loss: {hamming_loss(y_test, y_pred)}")
+        y_pred = model.predict(x_test)
+        print(average_precision_score(y_test, y_pred, average="micro"))
+        print(average_precision_score(y_test, y_pred, average="weighted"))
         model.summary(line_length=120)
         pprint.PrettyPrinter(indent=2).pprint(model.get_config())
 
