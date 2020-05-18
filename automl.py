@@ -20,7 +20,7 @@ def main(args):
 
     df = pd.read_pickle("train/data.pkl")
     labels = np.array(df["labels"].tolist())
-    with open("train/preprocessed_docs_no_sw_no_rep.pkl", "rb") as f:
+    with open("train/preprocessed_docs.pkl", "rb") as f:
         preprocessed_docs = pickle.load(f)
 
     x_train, x_test, y_train, y_test = train_test_split(preprocessed_docs,
@@ -39,21 +39,15 @@ def main(args):
                             seed=seed,
                             overwrite=True,
                             directory="/scratch/project_2002961/")
-    clf.fit(np.array(x_train), y_train)
+    clf.fit(np.array(x_train), y_train, validation_data=(np.array(x_test), y_test))
 
     for model in clf.tuner.get_best_models(10):
         y_pred_prob = model.predict(x_test)
         y_pred = np.round(y_pred_prob)
 
         print(f"accuracy: {accuracy_score(y_test, y_pred)}")
-        print(f"AP (macro): {average_precision_score(y_test, y_pred_prob, average='macro')}")
-        print(f"AP (micro): {average_precision_score(y_test, y_pred_prob, average='micro')}")
-        print(f"AP (samples): {average_precision_score(y_test, y_pred_prob, average='samples')}")
-        print(f"AP (weighted): {average_precision_score(y_test, y_pred_prob, average='weighted')}")
         print(f"F1 (macro): {f1_score(y_test, y_pred, average='macro')}")
         print(f"F1 (micro): {f1_score(y_test, y_pred, average='micro')}")
-        print(f"F1 (samples): {f1_score(y_test, y_pred, average='samples')}")
-        print(f"F1 (weighted): {f1_score(y_test, y_pred, average='weighted')}")
         print(f"LRAP: {label_ranking_average_precision_score(y_test, y_pred_prob)}")
         print(f"NDCG: {ndcg_score(y_test, y_pred_prob)}")
 
