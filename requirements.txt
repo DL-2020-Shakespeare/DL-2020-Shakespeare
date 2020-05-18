@@ -11,5 +11,5 @@ pandas
 scikit-learn
 seaborn
 spacy
-tensorflow==2.2.0rc4
+tensorflow
 tqdm
