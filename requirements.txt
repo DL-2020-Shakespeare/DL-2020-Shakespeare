@@ -3,6 +3,7 @@
 bs4
 gdown
 gensim
+iterative-stratification
 jupyter
 lxml
 matplotlib
