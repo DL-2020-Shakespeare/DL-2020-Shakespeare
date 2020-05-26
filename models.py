@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dense, Dropout, Activation, Embedding, Conv1
 from tensorflow.keras import Sequential, Model, Input
 
 
-def init_cnn_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+def cnn_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     embedding_matrix = kwargs["embedding_matrix"]
     loss = kwargs["loss"]
 
@@ -27,13 +27,11 @@ def init_cnn_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
         model.add(Conv1D(300, 2, activation="relu"))
         model.add(BatchNormalization())
         model.add(MaxPooling1D(pool_size = 2))
-        #model.add(ReLU())
 
         model.add(Dropout(.25))
         model.add(Conv1D(200, 2, activation="relu"))
         model.add(BatchNormalization())
         model.add(MaxPooling1D(pool_size = 2))
-        #model.add(ReLU())
 
         model.add(Dropout(.25))
         model.add(Conv1D(300, 2, activation="relu"))
@@ -58,7 +56,7 @@ def init_cnn_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
         return model
 
 
-def init_cnn_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+def cnn_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     embedding_matrix = kwargs["embedding_matrix"]
     loss = kwargs["loss"]
 
@@ -110,7 +108,65 @@ def init_cnn_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
         return model
 
 
-def init_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+def cnn_3(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+    embedding_matrix = kwargs["embedding_matrix"]
+    filters_1 = kwargs["filters_1"]
+    filters_2 = kwargs["filters_2"]
+    loss = kwargs["loss"]
+
+    with MirroredStrategy().scope():
+        model = Sequential()
+
+        model.add(Embedding(
+            input_dim=n_vocabulary,
+            output_dim=n_embedding,
+            embeddings_initializer=Constant(embedding_matrix),
+            input_length=n_sequence,
+            trainable=False
+        ))
+
+        model.add(Conv1D(filters_1, 2))
+        model.add(BatchNormalization())
+        model.add(ReLU())
+        model.add(MaxPooling1D(2))
+        model.add(Dropout(.2))
+
+        model.add(Conv1D(filters_2, 2))
+        model.add(BatchNormalization())
+        model.add(ReLU())
+        model.add(MaxPooling1D(2))
+        model.add(Dropout(.2))
+
+        model.add(Flatten())
+
+        model.add(Dense(n_labels, activation="sigmoid"))
+        model.compile(loss=loss, optimizer="adam")
+        return model
+
+
+def bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+    embedding_matrix = kwargs["embedding_matrix"]
+    loss = kwargs["loss"]
+
+    with MirroredStrategy().scope():
+        model = Sequential()
+
+        model.add(Embedding(
+            input_dim=n_vocabulary,
+            output_dim=n_embedding,
+            embeddings_initializer=Constant(embedding_matrix),
+            input_length=n_sequence,
+            trainable=False
+        ))
+
+        model.add(Bidirectional(LSTM(256, dropout=.2)))
+
+        model.add(Dense(n_labels, activation="sigmoid"))
+        model.compile(loss=loss, optimizer="adam")
+        return model
+
+
+def cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     filters_1 = kwargs["filters_1"]
     filters_2 = kwargs["filters_2"]
     embedding_matrix = kwargs["embedding_matrix"]
@@ -140,15 +196,50 @@ def init_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs
         model.add(Dropout(.2))
 
         model.add(Bidirectional(LSTM(256, dropout=.2)))
-#         model.add(BatchNormalization())
 
         model.add(Dense(n_labels, activation="sigmoid"))
         model.compile(loss=loss, optimizer="adam")
         return model
 
 
-def init_split_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels,
-                             **kwargs):
+def cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+    filters_1 = kwargs["filters_1"]
+    filters_2 = kwargs["filters_2"]
+    embedding_matrix = kwargs["embedding_matrix"]
+    loss = kwargs["loss"]
+
+    with MirroredStrategy().scope():
+        model = Sequential()
+
+        model.add(Embedding(
+            input_dim=n_vocabulary,
+            output_dim=n_embedding,
+            embeddings_initializer=Constant(embedding_matrix),
+            input_length=n_sequence,
+            trainable=False
+        ))
+
+        model.add(Conv1D(filters_1, 2))
+        model.add(BatchNormalization())
+        model.add(ReLU())
+        model.add(MaxPooling1D(2))
+        model.add(Dropout(.2))
+
+        model.add(Conv1D(filters_2, 2))
+        model.add(BatchNormalization())
+        model.add(ReLU())
+        model.add(MaxPooling1D(2))
+        model.add(Dropout(.2))
+
+        model.add(Bidirectional(LSTM(256, dropout=.2, return_sequences=True)))
+        model.add(Bidirectional(LSTM(128, dropout=.2)))
+
+        model.add(Dense(n_labels, activation="sigmoid"))
+        model.compile(loss=loss, optimizer="adam")
+        return model
+
+
+def split_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     filters_1 = kwargs["filters_1"]
     filters_2 = kwargs["filters_2"]
     embedding_matrix = kwargs["embedding_matrix"]
@@ -157,10 +248,10 @@ def init_split_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels,
     with MirroredStrategy().scope():
         input_layer = Input(n_sequence,)
         embedding_layer = Embedding(n_vocabulary, n_embedding,
-                embeddings_initializer=Constant(embedding_matrix),
-                trainable=True)(input_layer)
+                                    embeddings_initializer=Constant(embedding_matrix),
+                                    trainable=True)(input_layer)
         cnn_list = []
-        for kernel_size in [2, 3, 4]:
+        for kernel_size in [2, 3]:
             x = Conv1D(filters_1, kernel_size, padding="same")(embedding_layer)
             x = BatchNormalization()(x)
             x = ReLU()(x)
@@ -183,8 +274,7 @@ def init_split_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels,
         return model
 
 
-def init_split_cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels,
-                             **kwargs):
+def split_cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     filters_1 = kwargs["filters_1"]
     filters_2 = kwargs["filters_2"]
     loss = kwargs["loss"]
@@ -220,8 +310,7 @@ def init_split_cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels,
         model.compile(loss=loss, optimizer="adam")
         return model
 
-def init_split_cnn_bi_lstm_3(n_vocabulary, n_embedding, n_sequence, n_labels,
-                             **kwargs):
+def split_cnn_bi_lstm_3(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
     filters_1 = kwargs["filters_1"]
     filters_2 = kwargs["filters_2"]
     embedding_matrix_1 = kwargs["embedding_matrix_1"]

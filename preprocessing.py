@@ -20,7 +20,8 @@ def worker(corpus):
             if token.is_punct or token.is_space or token.is_stop:
                 continue
             else:
-                preprocessed_text.append(token.lemma_.lower())
+#                 preprocessed_text.append(token.lemma_.lower())
+                preprocessed_text.append(token.text.lower())
         preprocessed_corpus.append(" ".join(preprocessed_text))
     return preprocessed_corpus
 
