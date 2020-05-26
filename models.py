@@ -20,6 +20,7 @@ def cnn_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -67,6 +68,7 @@ def cnn_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -121,6 +123,7 @@ def cnn_3(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -155,6 +158,7 @@ def bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -179,6 +183,7 @@ def cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -215,6 +220,7 @@ def cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
             input_dim=n_vocabulary,
             output_dim=n_embedding,
             embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
             input_length=n_sequence,
             trainable=False
         ))
@@ -249,7 +255,7 @@ def split_cnn_bi_lstm_1(n_vocabulary, n_embedding, n_sequence, n_labels, **kwarg
         input_layer = Input(n_sequence,)
         embedding_layer = Embedding(n_vocabulary, n_embedding,
                                     embeddings_initializer=Constant(embedding_matrix),
-                                    trainable=True)(input_layer)
+                                    mask_zero=True, trainable=True)(input_layer)
         cnn_list = []
         for kernel_size in [2, 3]:
             x = Conv1D(filters_1, kernel_size, padding="same")(embedding_layer)
@@ -288,7 +294,7 @@ def split_cnn_bi_lstm_2(n_vocabulary, n_embedding, n_sequence, n_labels, **kwarg
         for embedding_matrix in [embedding_matrix_1, embedding_matrix_2]:
             x = Embedding(n_vocabulary, n_embedding,
                           embeddings_initializer=Constant(embedding_matrix),
-                          trainable=False)(input_layer)
+                          mask_zero=True, trainable=False)(input_layer)
             x = Conv1D(filters_1, 2)(x)
             x = BatchNormalization()(x)
             x = ReLU()(x)
@@ -324,7 +330,7 @@ def split_cnn_bi_lstm_3(n_vocabulary, n_embedding, n_sequence, n_labels, **kwarg
         for embedding_matrix in [embedding_matrix_1, embedding_matrix_2]:
             x = Embedding(n_vocabulary, n_embedding,
                           embeddings_initializer=Constant(embedding_matrix),
-                          trainable=False)(input_layer)
+                          mask_zero=True, trainable=False)(input_layer)
             x = Conv1D(filters_1, 2)(x)
             x = BatchNormalization()(x)
             x = ReLU()(x)
