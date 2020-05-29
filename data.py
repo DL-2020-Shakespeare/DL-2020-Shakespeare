@@ -59,13 +59,14 @@ def get_labels(raw_xml):
 
 
 def worker(zip_files):
-    d = {"doc": [], "labels": []}
+    d = {"xml_file": [], "doc": [], "labels": []}
     for zip_file in zip_files:
         with zipfile.ZipFile(zip_file, "r") as zf:
             xml_files = [f for f in zf.namelist() if os.path.splitext(f)[1] == ".xml"]
             for xml_file in xml_files:
                 with zf.open(xml_file, "r") as xf:
                     raw_xml = xf.read()
+                    d["xml_file"].append(xml_file)
                     d["doc"].append(get_doc(raw_xml))
                     d["labels"].append(get_labels(raw_xml))
     return pd.DataFrame(d)
@@ -81,7 +82,7 @@ def get_docs_labels(corpus_dir, n_zip_files=None):
     split = np.array_split(zip_files, n_cores)
     with Pool(n_cores) as pool:
         df_split = pool.map(worker, split)
-    return pd.concat(df_split)
+    return pd.concat(df_split).sort_values(by=["xml_file"])
 
 
 if __name__ == "__main__":
