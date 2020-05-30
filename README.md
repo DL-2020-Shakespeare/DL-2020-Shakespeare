@@ -11,7 +11,7 @@
 * Put these to train/:
     * [data.pkl](https://drive.google.com/uc?id=1LjxAbrjAjsQa1ss1Z56KseJafFsMinEL)
     * [preprocessed_docs_tokenized_cased.pkl](https://drive.google.com/uc?id=1cuEn_-oEv6AkD5H9FZ5BRKr2JjwAlqTD)
-* Put these to test/:
+* Put these to text/:
     * [data.pkl](https://drive.google.com/uc?id=1sWoaq2UevAx85AX8vQuS0QMtd0EcV39t)
     * [preprocessed_docs_tokenized_cased.pkl](https://drive.google.com/uc?id=1fWh0Eyus3R1DozcDNPtivbfASH-89z5g)
 
