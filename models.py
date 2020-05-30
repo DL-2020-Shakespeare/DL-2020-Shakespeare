@@ -352,3 +352,36 @@ def split_cnn_bi_lstm_3(n_vocabulary, n_embedding, n_sequence, n_labels, **kwarg
         model = Model(inputs=input_layer, outputs=x)
         model.compile(loss=loss, optimizer="adam")
         return model
+
+
+def one_layer_cnn(n_vocabulary, n_embedding, n_sequence, n_labels, **kwargs):
+    embedding_matrix = kwargs["embedding_matrix"]
+    filters_1 = kwargs["filters_1"]
+    filter_window_size = kwargs["filter_window_size"]
+    dropout = kwargs["dropout"]
+    pool_size = kwargs["pool_size"]
+    loss = kwargs["loss"]
+
+    with MirroredStrategy().scope():
+        model = Sequential()
+
+        model.add(Embedding(
+            input_dim=n_vocabulary,
+            output_dim=n_embedding,
+            embeddings_initializer=Constant(embedding_matrix),
+            mask_zero=True,
+            input_length=n_sequence,
+            trainable=False
+        ))
+
+        model.add(Conv1D(filters_1, filter_window_size))
+        model.add(BatchNormalization())
+        model.add(ReLU())
+        model.add(MaxPooling1D(pool_size))
+        model.add(Dropout(dropout))
+
+        model.add(Flatten())
+
+        model.add(Dense(n_labels, activation="sigmoid"))
+        model.compile(loss=loss, optimizer="adam")
+        return model
